@@ -1,0 +1,24 @@
+from flask import Flask, jsonify, request
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///resources.db'
+db = SQLAlchemy(app)
+
+class Resource(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    category = db.Column(db.String(50), nullable=False)
+
+@app.route('/resources', methods=['GET'])
+def get_resources():
+    category = request.args.get('category')
+    if category:
+        resources = Resource.query.filter_by(category=category).all()
+    else:
+        resources = Resource.query.all()
+    return jsonify([{'title': r.title, 'content': r.content} for r in resources])
+
+if __name__ == '__main__':
+    app.run(debug=True)
